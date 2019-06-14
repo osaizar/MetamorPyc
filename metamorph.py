@@ -45,7 +45,7 @@ def patch_executable(args, r2, mutations):
         r2.cmd("wx {} @{}".format(mutation["bytes"], mutation["offset"]))
 
     print(colored("[INFO] Total number of mutations: {}/{}"
-          .format(len(list_mutations), total_ins), "cyan"))
+          .format(len(mutations), total_ins), "cyan"))
 
 
 def configure_environment(args):
