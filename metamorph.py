@@ -133,7 +133,7 @@ def get_mutations(functions):
     for func in functions:
         if func["type"] == "fcn":
             try:
-                func_code = r2.cmdj("pdfj @{}".format(fun["name"]))
+                func_code = r2.cmdj("pdfj @{}".format(func["name"]))
 
                 if func_code is None:
                     print(colored("[INFO] Function {} has no code".format(func["name"]), "cyan"))
