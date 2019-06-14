@@ -99,9 +99,9 @@ def mutate_function(args, func):
                     continue
 
                 if ins_analyzed["size"] == size:
-                        print_debug("[DEBUG] Mutating instruction ({:#x}): {:20s} -->    {:30s}"
-                              .format(ins_analyzed["offset"], ins_analyzed["opcode"],
-                                      mutation if mutation else ins_analyzed["opcode"]), "green" if mutation else "magenta")
+                    print_debug("[DEBUG] Mutating instruction ({:#x}): {:20s} -->    {:30s}"
+                          .format(ins_analyzed["offset"], ins_analyzed["opcode"],
+                                  mutation if mutation else ins_analyzed["opcode"]), "green" if mutation else "magenta")
                     if mutation:
                         mutations.append({"offset": ins_analyzed["offset"], "bytes": generate_bytes(mutation)})
                 else:
@@ -117,10 +117,9 @@ def mutate_function(args, func):
 
                     ins_idx += ins_to_skip
 
-                    if args.debug:
-                        print(colored("[DEBUG] Mutating instruction ({:#x}): {:20s} -->    {:30s}"
-                              .format(ins_analyzed["offset"], orig_ins,
-                                      mutation if not same_ins else orig_ins), "green" if not same_ins else "magenta"))
+                    print(colored("[DEBUG] Mutating instruction ({:#x}): {:20s} -->    {:30s}"
+                          .format(ins_analyzed["offset"], orig_ins,
+                                  mutation if not same_ins else orig_ins), "green" if not same_ins else "magenta"))
                     if not same_ins:
                         mutations.append({"offset": ins_analyzed["offset"], "bytes": generate_bytes(mutation)})
 
