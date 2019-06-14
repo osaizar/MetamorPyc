@@ -2,9 +2,11 @@ import sys
 import r2pipe
 import argparse
 import engine as me
+import keystone as ks
 from termcolor import colored
 from os import listdir, mkdir
 from os.path import isfile, isdir, join, exists
+import shutil
 
 SUP_ARCH = ["x86"] # Supported architectures
 
@@ -12,6 +14,7 @@ DEBUG = False
 KS = None
 META = None
 total_ins = 0
+
 
 def print_debug(str, color):
     if DEBUG:
@@ -52,7 +55,7 @@ def configure_environment(args):
     print(colored("[INFO] Opening {} in radare2.".format(args.input), "cyan"))
     r2 = r2pipe.open(args.output, ["-w", "-2"]) # -w write and -2 shut up stderr
 
-    print_debug(colored("[DEBUG] Analyzing architecture of the executable.", "green"))
+    print_debug("[DEBUG] Analyzing architecture of the executable.", "green")
     exe_info = r2.cmdj('ij')
 
     if "bin" not in exe_info:
@@ -64,8 +67,8 @@ def configure_environment(args):
         return None
 
     arch_bits = exe_info['bin']['bits']
-    arch = exe_info['bin']['arch'
-    print(colored("[INFO] Detected {} {} bits architecture.".format(arch, arch_bits), "cyan")
+    arch = exe_info['bin']['arch']
+    print(colored("[INFO] Detected {} {} bits architecture.".format(arch, arch_bits), "cyan"))
 
     print(colored("[INFO] Analyzing executable code.", "cyan"))
     r2.cmd('aaa')
@@ -75,6 +78,57 @@ def configure_environment(args):
 
     return r2
 
+
+def mutate_function(args, func):
+    global total_ins
+    n_ins = len(func["ops"])
+    ins_idx = 0
+    mutations = []
+    while ins_idx < n_ins:
+        ins_analyzed = func["ops"][ins_idx]
+
+        if ins_analyzed["type"] not in META.mutable_ins:
+            ins_idx += 1
+            continue
+
+        while True: # while meta not none
+            meta = META.generate_mutations(func["ops"], ins_idx)
+            if meta is not None:
+                mutation, size = meta
+                if args.random == 'n' and not mutation:
+                    continue
+
+                if ins_analyzed["size"] == size:
+                    if args.debug:
+                        print colored("[DEBUG] Mutating instruction ({:#x}): {:20s} -->    {:30s}"
+                              .format(ins_analyzed["offset"], ins_analyzed["opcode"],
+                                      mutation if mutation else ins_analyzed["opcode"]), "green" if mutation else "magenta")
+                    if mutation:
+                        mutations.append({"offset": ins_analyzed["offset"], "bytes": generate_bytes(mutation)})
+                else:
+                    ins_to_skip = size-ins_analyzed["size"]
+                    if ins_analyzed["type"] == "upush":
+                        orig_ins = "{}; {}".format(func["ops"][ins_idx]["opcode"], func["ops"][ins_idx + 1]["opcode"])
+                    else:
+                        orig_ins = "nop" + "; nop" * ins_to_skip
+
+                    same_ins = bool(mutation == "" or mutation == orig_ins)
+                    if args.random == 'n' and same_ins:
+                        continue
+
+                    ins_idx += ins_to_skip
+
+                    if args.debug:
+                        print colored("[DEBUG] Mutating instruction ({:#x}): {:20s} -->    {:30s}"
+                              .format(ins_analyzed["offset"], orig_ins,
+                                      mutation if not same_ins else orig_ins), "green" if not same_ins else "magenta")
+                    if not same_ins:
+                        mutations.append({"offset": ins_analyzed["offset"], "bytes": generate_bytes(mutation)})
+
+                total_ins += 1
+            break
+        ins_idx += 1
+    return mutations
 
 def get_mutations(functions):
     mutations = []
