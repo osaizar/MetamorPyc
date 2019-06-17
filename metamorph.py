@@ -13,7 +13,7 @@ SUP_ARCH = ["x86"] # Supported architectures
 DEBUG = False
 KS = None
 META = None
-total_ins = 0
+total_ins = 0 # TODO: global?
 
 
 def print_debug(str, color):
@@ -77,6 +77,39 @@ def configure_environment(args):
     META = me.MetaEngine(arch_bits)
 
     return r2
+
+
+def proto_mutate_function(args, func):
+    global total_ins
+    mutations = []
+    n_ins = len(func["ops"])
+
+    jump = 0
+    for i, ins in enumerate(func["ops"]):
+        if jump > 0:
+            jump -= 1
+            continue
+
+        if ins["type"] not in META.mutable_ins:
+            continue
+
+        meta = META.generate_mutations(func["ops"], i)
+        while meta not None:
+            mutation, size = meta
+            if mutation:
+                mutations.append({"offset": ins["offset"], "bytes": generate_bytes(mutation)})
+                jump = size - ins["size"] # mutation size will never be smaller than original size
+
+                print(colored("[DEBUG] Mutating instruction ({:#x}): {:20s} -->    {:30s}"
+                      .format(ins_analyzed["offset"], orig_ins,
+                              mutation if not same_ins else orig_ins), "green" if not same_ins else "magenta"))
+
+            meta = META.generate_mutations(func["ops"], i)
+
+        total_ins += 1
+
+
+    return mutations
 
 
 def mutate_function(args, func):
