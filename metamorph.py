@@ -79,7 +79,7 @@ def configure_environment(args):
     return r2
 
 
-def proto_mutate_function(args, func):
+def mutate_function(args, func):
     global total_ins
     mutations = []
     n_ins = len(func["ops"])
@@ -94,24 +94,21 @@ def proto_mutate_function(args, func):
             continue
 
         meta = META.generate_mutations(func["ops"], i)
-        while meta not None:
-            mutation, size = meta
-            if mutation:
-                mutations.append({"offset": ins["offset"], "bytes": generate_bytes(mutation)})
-                jump = size - ins["size"] # mutation size will never be smaller than original size
+        mutation, size = meta
+        if mutation:
+            mutations.append({"offset": ins["offset"], "bytes": generate_bytes(mutation)})
+            jump = size - ins["size"] # mutation size will never be smaller than original size
 
-                print(colored("[DEBUG] Mutating instruction ({:#x}): {:20s} -->    {:30s}"
-                      .format(ins_analyzed["offset"], orig_ins,
-                              mutation if not same_ins else orig_ins), "green" if not same_ins else "magenta"))
-
-            meta = META.generate_mutations(func["ops"], i)
+            print(colored("[DEBUG] Mutating instruction ({:#x}): {:20s} -->    {:30s}"
+                  .format(ins_analyzed["offset"], orig_ins,
+                          mutation if not same_ins else orig_ins), "green" if not same_ins else "magenta"))
 
         total_ins += 1
 
 
     return mutations
 
-
+"""
 def mutate_function(args, func):
     global total_ins
     n_ins = len(func["ops"])
@@ -124,7 +121,7 @@ def mutate_function(args, func):
             ins_idx += 1
             continue
 
-        while True: # while meta not none
+        while True: # while meta not none TODO: What is this txiribuelta for?
             meta = META.generate_mutations(func["ops"], ins_idx)
             if meta is not None:
                 mutation, size = meta
@@ -160,6 +157,8 @@ def mutate_function(args, func):
             break
         ins_idx += 1
     return mutations
+"""
+
 
 def get_mutations(functions):
     mutations = []

@@ -156,6 +156,20 @@ class MetaEngine:
                 res.append("; ".join(map(str, out)))
         return random.choice(res)
 
+    def generate_mutations(self, func, id): # Example generate_mutations function only changes movs to mov eax, ebx
+        try:
+            if func[id]["opcode"] == "mov eax, ebx":
+                return False, 0
+            elif "mov" in func[id]["opcode"]:
+                print ("{} ({:#x})".format(func[id]["opcode"], func[id]["offset"]))
+                # return False, 0
+                return "mov eax, ebx", 1
+            else:
+                return False, 0
+        except:
+            print ("exception")
+
+"""
     def generate_mutations(self, ins_list, idx):
         if ins_list[idx]["size"] == 1:
             if self.nop_1B.match(ins_list[idx]["opcode"]) is not None:
@@ -360,3 +374,4 @@ class MetaEngine:
                         return "pushfd; and {}, 0; popfd".format(m1.group(1)), 5
 
                 return None
+"""
