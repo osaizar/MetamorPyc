@@ -205,7 +205,7 @@ def main(args, r2):
 def parse_arguments():
     global DEBUG
 
-    argparser = argparse.ArgumentParser(prog="pymetangine",
+    argparser = argparse.ArgumentParser(prog="Metamorphic",
                                         description='A python metamorphic engine for PE/PE+ using radare2.')
     argparser.add_argument('-i', '--input', required=True,
                            help='Path to input executable/directory.')
