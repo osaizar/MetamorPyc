@@ -15,6 +15,7 @@ KS = None
 META = None
 total_ins = 0 # TODO: global?
 
+total_length = 0
 
 def print_debug(str, color):
     if DEBUG:
@@ -44,8 +45,8 @@ def patch_executable(args, r2, mutations):
     for idx, mutation in enumerate(mutations):
         r2.cmd("wx {} @{}".format(mutation["bytes"], mutation["offset"]))
 
-    print(colored("[INFO] Total number of mutations: {}/{}"
-          .format(len(mutations), total_ins), "cyan"))
+    print(colored("[INFO] Total number of mutations: {}/{} total length {}"
+          .format(len(mutations), total_ins, total_length), "cyan"))
 
 
 def configure_environment(args):
@@ -81,8 +82,10 @@ def configure_environment(args):
 
 def mutate_function(args, func):
     global total_ins
+    global total_length
     mutations = []
     n_ins = len(func["ops"])
+    total_length += n_ins
 
     jump = 0
     for i, ins in enumerate(func["ops"]):
@@ -99,17 +102,19 @@ def mutate_function(args, func):
             mutations.append({"offset": ins["offset"], "bytes": generate_bytes(mutation)})
             jump = size - ins["size"] # mutation size will never be smaller than original size
 
-            print(colored("[DEBUG] Mutating instruction ({:#x}): {:20s} -->    {:30s}"
-                  .format(ins_analyzed["offset"], orig_ins,
-                          mutation if not same_ins else orig_ins), "green" if not same_ins else "magenta"))
+            print_debug("[DEBUG] Mutating instruction ({:#x}): {:20s} -->    {:30s}"
+                  .format(ins["offset"], ins["opcode"],
+                          mutation if mutation else ins["opcode"]), "green" if mutation else "magenta")
+        else:
+            pass
 
         total_ins += 1
 
 
     return mutations
 
-"""
-def mutate_function(args, func):
+
+def old_mutate_function(args, func):
     global total_ins
     n_ins = len(func["ops"])
     ins_idx = 0
@@ -121,7 +126,7 @@ def mutate_function(args, func):
             ins_idx += 1
             continue
 
-        while True: # while meta not none TODO: What is this txiribuelta for?
+        while True: # while meta not none
             meta = META.generate_mutations(func["ops"], ins_idx)
             if meta is not None:
                 mutation, size = meta
@@ -157,8 +162,6 @@ def mutate_function(args, func):
             break
         ins_idx += 1
     return mutations
-"""
-
 
 def get_mutations(functions):
     mutations = []
