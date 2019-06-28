@@ -8,7 +8,6 @@ ARCH_FOLDER = "architectures/"
 
 class MetaEngine:
 
-
     def __init__(self, arch, bits):
         self.json = self.load_json(arch, bits)
         if self.json != None:
@@ -16,6 +15,7 @@ class MetaEngine:
                 self.bits = self.json["bits"]
                 self.arch = self.json["arch"]
                 self.mutable_ins = self.json["mutables"]
+                self.mutations = self.json["mutations"]
                 self.regs = self.json["registers"]
                 self.nops = self.json["nops"]
             except: # TODO: print Exception
@@ -43,7 +43,7 @@ class MetaEngine:
             return ""
 
         reg = random.choice(self.regs)
-        combinate = random.randint(0,1)
+        combinate = random.randint(0,1) # TODO: Adjust probability
 
         if self.nops["max"] < size or combinate == 1: # Combination of nops
             rnd = random.randint(1, min([self.nops["max"], size]))
@@ -53,18 +53,29 @@ class MetaEngine:
             return np.replace("{reg}", reg)+"; " # TODO: More than one register?
 
 
-    def create_regexp(self):
-        pass
-
-
     def generate_mutations(self, func, id):
         try:
-            if func[id]["opcode"] == "mov eax, ebx":
-                return False, 0
-            elif "mov" in func[id]["opcode"]:
-                # print ("{} ({:#x})".format(func[id]["opcode"], func[id]["offset"]))
-                return "mov eax, ebx", 1 # DEBUG: Test that instruction mutation works.
-            else:
-                return False, 0
+            mutations = []
+            for mut in self.mutations:
+                valid = True
+                regs = []
+
+                for i, m in enumerate(mut["orig"]):
+                    match = re.match(m, func[id+i]["opcode"])
+                    if match is not None:
+                        regs += list(match.groups())
+                    else:
+                        valid = False
+                        break
+
+                if valid:
+                    mutation = random.choice(mut["mutation"]["code"])
+                    for i, r in regs:
+                        mutation = mutation.replace("{reg"+str(i)+"}", r)
+
+                    mutations.append((mutation, mut["mutation"]["size"]))
+
+            return random.choice(mutations) # Return (mutation, size) touple
         except:
-            print ("exception")
+            print('Exception') # handle this plis
+            return False, 0
