@@ -1,0 +1,15 @@
+{
+  "name" : "x86 32 bits test",
+  "arch" : "x86",
+  "bits" : 32,
+  "registers" : ["eax", "ebx", "ecx", "edx", "esi", "edi"],
+  "mutables" : ["nop", "upush", "mov", "acmp", "or", "xor", "sub"],
+  "mutations" : [
+    {"orig" : "mov (e..), (e..)$", "mutation" : "push {}; pop {}"}
+  ],
+  "nops" : {
+    "max" : 2,
+    "1" : ["nop"],
+    "2" : ["pushfd; popfd", "pushad; popad", "push {reg}; pop {reg}"]
+  }
+}

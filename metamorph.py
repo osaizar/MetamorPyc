@@ -8,8 +8,6 @@ from os import listdir, mkdir
 from os.path import isfile, isdir, join, exists
 import shutil
 
-SUP_ARCH = ["x86"] # Supported architectures
-
 DEBUG = False
 KS = None
 META = None
@@ -22,7 +20,7 @@ def print_debug(str, color):
         print(colored(str, color))
 
 
-def get_ks(arch, arch_bits):
+def get_ks(arch, arch_bits): # TODO: What architectures are supported by KS?
     if arch == "x86":
         ks_arch = ks.KS_ARCH_X86
         if arch_bits == 32:
@@ -63,19 +61,18 @@ def configure_environment(args):
         print(colored("[ERROR] File format not supported.", "red"))
         return None
 
-    if exe_info['bin']['arch'] not in SUP_ARCH:
-        print(colored("[ERROR] Architecture {} not supported.".format(exe_info['bin']['arch']), "red"))
-        return None
-
     arch_bits = exe_info['bin']['bits']
     arch = exe_info['bin']['arch']
     print(colored("[INFO] Detected {} {} bits architecture.".format(arch, arch_bits), "cyan"))
 
+    KS = get_ks(arch, arch_bits)
+    META = me.MetaEngine(arch, arch_bits)
+    if META.json == None:
+        print(colored("[ERROR] Couldn't load a config file for {} {} architecture.".format(exe_info['bin']['arch'], exe_info['bin']['bits']), "red"))
+        return None
+
     print(colored("[INFO] Analyzing executable code.", "cyan"))
     r2.cmd('aaa')
-
-    KS = get_ks(arch, arch_bits)
-    META = me.MetaEngine(arch_bits)
 
     return r2
 
@@ -113,55 +110,6 @@ def mutate_function(args, func):
 
     return mutations
 
-
-def old_mutate_function(args, func):
-    global total_ins
-    n_ins = len(func["ops"])
-    ins_idx = 0
-    mutations = []
-    while ins_idx < n_ins:
-        ins_analyzed = func["ops"][ins_idx]
-
-        if ins_analyzed["type"] not in META.mutable_ins:
-            ins_idx += 1
-            continue
-
-        while True: # while meta not none
-            meta = META.generate_mutations(func["ops"], ins_idx)
-            if meta is not None:
-                mutation, size = meta
-                if args.random == 'n' and not mutation:
-                    continue
-
-                if ins_analyzed["size"] == size:
-                    print_debug("[DEBUG] Mutating instruction ({:#x}): {:20s} -->    {:30s}"
-                          .format(ins_analyzed["offset"], ins_analyzed["opcode"],
-                                  mutation if mutation else ins_analyzed["opcode"]), "green" if mutation else "magenta")
-                    if mutation:
-                        mutations.append({"offset": ins_analyzed["offset"], "bytes": generate_bytes(mutation)})
-                else:
-                    ins_to_skip = size-ins_analyzed["size"]
-                    if ins_analyzed["type"] == "upush":
-                        orig_ins = "{}; {}".format(func["ops"][ins_idx]["opcode"], func["ops"][ins_idx + 1]["opcode"])
-                    else:
-                        orig_ins = "nop" + "; nop" * ins_to_skip
-
-                    same_ins = bool(mutation == "" or mutation == orig_ins)
-                    if args.random == 'n' and same_ins:
-                        continue
-
-                    ins_idx += ins_to_skip
-
-                    print(colored("[DEBUG] Mutating instruction ({:#x}): {:20s} -->    {:30s}"
-                          .format(ins_analyzed["offset"], orig_ins,
-                                  mutation if not same_ins else orig_ins), "green" if not same_ins else "magenta"))
-                    if not same_ins:
-                        mutations.append({"offset": ins_analyzed["offset"], "bytes": generate_bytes(mutation)})
-
-                total_ins += 1
-            break
-        ins_idx += 1
-    return mutations
 
 def get_mutations(functions):
     mutations = []
@@ -205,7 +153,7 @@ def main(args, r2):
 def parse_arguments():
     global DEBUG
 
-    argparser = argparse.ArgumentParser(prog="Metamorphic",
+    argparser = argparse.ArgumentParser(prog="MetamorPhyc",
                                         description='A python metamorphic engine for PE/PE+ using radare2.')
     argparser.add_argument('-i', '--input', required=True,
                            help='Path to input executable/directory.')
