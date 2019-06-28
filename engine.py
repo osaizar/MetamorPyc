@@ -54,28 +54,28 @@ class MetaEngine:
 
 
     def generate_mutations(self, func, id):
-        try:
-            mutations = []
-            for mut in self.mutations:
-                valid = True
-                regs = []
+        mutations = []
+        for mut in self.mutations:
+            valid = True
+            regs = []
 
-                for i, m in enumerate(mut["orig"]):
-                    match = re.match(m, func[id+i]["opcode"])
-                    if match is not None:
-                        regs += list(match.groups())
-                    else:
-                        valid = False
-                        break
+            for i, m in enumerate(mut["orig"]):
+                match = re.match(m, func[id+i]["opcode"])
+                if match is not None:
+                    regs += list(match.groups())
+                else:
+                    valid = False
+                    break
 
-                if valid:
-                    mutation = random.choice(mut["mutation"]["code"])
-                    for i, r in regs:
-                        mutation = mutation.replace("{reg"+str(i)+"}", r)
+            if valid:
+                mutation = random.choice(mut["mutation"])
+                mutcode = mutation["code"]
+                for i, r in enumerate(regs):
+                    mutcode = mutcode.replace("{reg"+str(i)+"}", r)
 
-                    mutations.append((mutation, mut["mutation"]["size"]))
+                mutations.append((mutcode, mutation["size"]))
 
+        if len(mutations) != 0:
             return random.choice(mutations) # Return (mutation, size) touple
-        except:
-            print('Exception') # handle this plis
-            return False, 0
+        else:
+            return "", 0

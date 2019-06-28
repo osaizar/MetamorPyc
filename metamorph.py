@@ -7,6 +7,7 @@ from termcolor import colored
 from os import listdir, mkdir
 from os.path import isfile, isdir, join, exists
 import shutil
+import traceback
 
 DEBUG = False
 KS = None
@@ -67,9 +68,12 @@ def configure_environment(args):
 
     KS = get_ks(arch, arch_bits)
     META = me.MetaEngine(arch, arch_bits)
+
     if META.json == None:
         print(colored("[ERROR] Couldn't load a config file for {} {} architecture.".format(exe_info['bin']['arch'], exe_info['bin']['bits']), "red"))
         return None
+
+    print(colored("[INFO] Loaded '{}' config file".format(META.json["name"]), "cyan"))
 
     print(colored("[INFO] Analyzing executable code.", "cyan"))
     r2.cmd('aaa')
@@ -128,7 +132,8 @@ def get_mutations(functions):
                         mutations.append(mutation)
             except Exception as error:
                 print(colored("[ERROR] Function {} could not be disassembled".format(func["name"]), "red"))
-                print(colored("[ERROR] Exception {}".format(error), "red"))
+                if DEBUG:
+                    print(colored("[ERROR] Exception {}".format(traceback.format_exc()), "red"))
 
     mutations = [dict for sub_list in mutations for dict in sub_list]
 
