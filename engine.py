@@ -70,8 +70,12 @@ class MetaEngine:
             if valid:
                 mutation = random.choice(mut["mutation"])
                 mutcode = mutation["code"]
+
                 for i, r in enumerate(regs):
                     mutcode = mutcode.replace("{reg"+str(i)+"}", r)
+
+                rnd = random.randint(1,4) # TODO: How many nops?
+                mutcode = mutcode.replace("{nop}", get_nop_instructions(rnd))
 
                 mutations.append((mutcode, len(mut["orig"])))
 
