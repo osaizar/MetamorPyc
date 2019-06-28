@@ -5,7 +5,8 @@
   "registers" : ["eax", "ebx", "ecx", "edx", "esi", "edi"],
   "mutables" : ["nop", "upush", "mov", "acmp", "or", "xor", "sub"],
   "mutations" : [
-    {"orig" : ["mov (e..), (e..)$"], "mutation" : [{"code" : "push {reg1}; pop {reg0}", "size" : 2}]}
+    {"orig" : ["mov (e..), (e..)$"], "mutation" : [{"code" : "push {reg1}; pop {reg0}"}]},
+    {"orig" : ["push (e..)$", "pop (e..)$"], "mutation" : [{"code" : "mov {reg1}, {reg0}"}]}
   ],
   "nops" : {
     "max" : 2,

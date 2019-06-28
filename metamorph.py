@@ -98,11 +98,10 @@ def mutate_function(args, func):
             continue
 
         meta = META.generate_mutations(func["ops"], i)
-        mutation, size = meta
+        mutation, jump = meta
         if mutation:
             mutations.append({"offset": ins["offset"], "bytes": generate_bytes(mutation)})
-            jump = size - ins["size"] # mutation size will never be smaller than original size
-
+            
             print_debug("[DEBUG] Mutating instruction ({:#x}): {:20s} -->    {:30s}"
                   .format(ins["offset"], ins["opcode"],
                           mutation if mutation else ins["opcode"]), "green" if mutation else "magenta")

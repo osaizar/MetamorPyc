@@ -73,9 +73,9 @@ class MetaEngine:
                 for i, r in enumerate(regs):
                     mutcode = mutcode.replace("{reg"+str(i)+"}", r)
 
-                mutations.append((mutcode, mutation["size"]))
+                mutations.append((mutcode, len(mut["orig"])))
 
         if len(mutations) != 0:
-            return random.choice(mutations) # Return (mutation, size) touple
+            return random.choice(mutations) # Return (mutation, jump) touple
         else:
             return "", 0

@@ -1,0 +1,16 @@
+{
+  "name" : "x86 64 bits test",
+  "arch" : "x86",
+  "bits" : 64,
+  "registers" : ["nop", "upush", "mov", "acmp", "or", "xor", "sub"],
+  "mutables" : ["nop", "mov", "acmp", "or", "xor", "sub"],
+  "mutations" : [
+    {"orig" : ["mov (e..), (e..)$"], "mutation" : [{"code" : "push {reg1}; pop {reg0}", "size" : 2}]}
+  ],
+  "nops" : {
+    "max" : 2,
+    "1" : ["nop"],
+    "2" : ["pushfq; popfq", "push {reg}; pop {reg}"],
+    "3" : ["push {reg}; nop; pop {reg}"]
+  }
+}
