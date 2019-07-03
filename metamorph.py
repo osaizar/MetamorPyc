@@ -157,16 +157,14 @@ def main(args, r2):
 def parse_arguments():
     global DEBUG
 
-    argparser = argparse.ArgumentParser(prog="MetamorPhyc",
-                                        description='A python metamorphic engine for PE/PE+ using radare2.')
+    argparser = argparse.ArgumentParser(prog="MetamorPyc",
+                                        description='A simple and flexible metamorphic engine using radare2.')
     argparser.add_argument('-i', '--input', required=True,
                            help='Path to input executable/directory.')
     argparser.add_argument('-o', '--output', default=['meta.exe', 'meta'],
                            help='Path to output executable/directory. Default: meta.exe/meta for file/directory.')
     argparser.add_argument('-d', '--debug', action='store_true',
                            help='Enable debug messages during execution.')
-    argparser.add_argument('-r', '--random', choices=['y', 'n'], default='y',
-                           help='Change mode of replacements, random/all substitutions.')
 
     args = argparser.parse_args()
 
