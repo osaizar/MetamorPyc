@@ -94,14 +94,14 @@ def mutate_function(args, func):
             jump -= 1
             continue
 
-        if ins["type"] not in META.mutable_ins:
+        if "type" not in ins or ins["type"] not in META.mutable_ins:
             continue
 
         meta = META.generate_mutations(func["ops"], i)
         mutation, jump = meta
         if mutation:
-            mutations.append({"offset": ins["offset"], "bytes": generate_bytes(mutation)})
-            
+            bytes = generate_bytes(mutation)
+            mutations.append({"offset": ins["offset"], "bytes": bytes})
             print_debug("[DEBUG] Mutating instruction ({:#x}): {:20s} -->    {:30s}"
                   .format(ins["offset"], ins["opcode"],
                           mutation if mutation else ins["opcode"]), "green" if mutation else "magenta")
@@ -117,7 +117,7 @@ def mutate_function(args, func):
 def get_mutations(functions):
     mutations = []
     for func in functions:
-        if func["type"] == "fcn":
+        if func["type"] == "fcn" and "name" in func:
             try:
                 func_code = r2.cmdj("pdfj @{}".format(func["name"]))
 

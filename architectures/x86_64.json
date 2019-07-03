@@ -2,10 +2,11 @@
   "name" : "x86 64 bits test",
   "arch" : "x86",
   "bits" : 64,
-  "registers" : ["nop", "upush", "mov", "acmp", "or", "xor", "sub"],
+  "registers" : ["rax", "rbx", "rcx", "rdx", "rsi", "rdi"],
   "mutables" : ["nop", "mov", "acmp", "or", "xor", "sub"],
   "mutations" : [
-    {"orig" : ["mov (e..), (e..)$"], "mutation" : [{"code" : "push {reg1}; pop {reg0}", "size" : 2}]}
+    {"orig" : ["xor (r[a-ds189][ixp0-5]), ((?=\\1)...)$"], "mutation" : [{"code" : "sub {reg0}, {reg0}"}]},
+    {"orig" : ["sub (r[a-ds189][ixp0-5]), ((?=\\1)...)$"], "mutation" : [{"code" : "xor {reg0}, {reg0}"}]}
   ],
   "nops" : {
     "max" : 2,
