@@ -105,3 +105,4 @@ venv.bak/
 
 # Binary samples
 samples/
+run_tests.py
